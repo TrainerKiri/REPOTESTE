@@ -1,0 +1,395 @@
+:root {
+    --primary-color: #6B4423;
+    --secondary-color: #8B6B4F;
+    --bg-dark: #2A2420;
+    --bg-darker: #1C1917;
+    --text-light: #E6DED5;
+    --text-gray: #A39E99;
+    --border-color: #463831;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
+body {
+    font-family: 'Crimson Text', 'Georgia', serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-darker);
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.nav-bar h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.conteudo-container {
+    background: linear-gradient(rgba(42, 36, 32, 0.10), rgba(42, 36, 32, 0.10)),
+                url(assets/old-library-books-drawing-ulme7n8ce4bsuabu-CFo71Sp5.jpg) no-repeat center center fixed;
+    background-size: cover;
+    flex: 1;
+    padding: 2rem;
+    text-align: center;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: var(--bg-darker);
+    color: var(--text-light);
+    padding: 2.5rem;
+    border-radius: 12px;
+    position: relative;
+    margin: 5% auto;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.memoria-modal-content {
+    max-width: 900px;
+    background: var(--bg-darker);
+    padding: 3rem;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-gray);
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: var(--text-light);
+}
+
+input, textarea {
+    background-color: rgba(230, 222, 213, 0.05);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    font-family: 'Crimson Text', 'Georgia', serif;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-family: 'Crimson Text', 'Georgia', serif;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.memorias-lista {
+    margin-top: 2rem;
+    display: grid;
+    gap: 2rem;
+    padding: 1rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.memoria-item {
+    background-color: var(--bg-darker);
+    padding: 2rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    position: relative;
+}
+
+.memoria-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+    background-color: rgba(28, 25, 23, 0.95);
+}
+
+.memoria-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.memoria-header h3 {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 1.5rem;
+    flex: 1;
+    font-style: italic;
+}
+
+.memoria-description {
+    margin: 0;
+    line-height: 1.8;
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.data {
+    color: var(--text-gray);
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.imagem-memoria {
+    width: 100%;
+    height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+}
+
+.galeria-imagens {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.imagem-container {
+    position: relative;
+    aspect-ratio: 1;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0.5rem;
+}
+
+.imagem-principal {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+    border-radius: 8px;
+    grid-column: 1 / -1;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+}
+
+.imagem-galeria {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.imagem-galeria:hover {
+    transform: scale(1.05);
+}
+
+.imagem-descricao {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    color: var(--text-gray);
+    font-style: italic;
+    text-align: center;
+}
+
+.timer {
+    font-size: 1.5rem;
+    margin: 2rem 0;
+    color: var(--text-light);
+    background-color: var(--bg-darker);
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    font-style: italic;
+}
+
+.admin-button {
+    background-color: var(--bg-darker);
+}
+
+.delete-btn {
+    background-color: #6B2B2B;
+}
+
+.error-message {
+    color: #CF6679;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+#marca {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: var(--bg-darker);
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+}
+
+.track-search {
+    margin-top: 1rem;
+}
+
+.track-search input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: rgba(230, 222, 213, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-light);
+}
+
+.track-results {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.track-item:hover {
+    background-color: rgba(230, 222, 213, 0.05);
+}
+
+.track-info {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.track-name {
+    font-weight: bold;
+    color: var(--text-light);
+}
+
+.track-artist {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.memory-tracks {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.memory-track {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-darker);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.track-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.play-button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.play-button:hover {
+    color: var(--primary-color);
+}
+
+.memory-track .delete-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+    .memorias-lista {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+    
+    .nav-bar h1 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .memoria-header {
+        flex-direction: column;
+    }
+    
+    .data {
+        margin-top: 0.5rem;
+    }
+    
+    .galeria-imagens {
+        grid-template-columns: 1fr;
+    }
+}
