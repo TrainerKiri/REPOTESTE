@@ -1,5 +1,5 @@
-import { signIn, signOut, isAdmin, createMemory, getMemories, deleteMemory, uploadImage, getMemoryById, addMemoryImages, updateMemory, addMemoryTrack, deleteMemoryTrack } from './supabase.js';
-import { searchTracks } from './spotify.js';
+import { signIn, signOut, isAdmin, createMemory, getMemories, deleteMemory, uploadImage, getMemoryById, addMemoryImages, updateMemory, addMemoryVideo, deleteMemoryVideo } from './supabase.js';
+import { extractYouTubeId, getVideoInfo } from './youtube.js';
 
 const START_DATE = new Date("2025-01-06");
 
@@ -24,8 +24,7 @@ class MemoriasApp {
             memoriaForm: document.getElementById("memoriaForm"),
             memoriaModal: document.getElementById("memoriaModal"),
             memoriaDetalhes: document.getElementById("memoriaDetalhes"),
-            trackSearchInput: document.getElementById("trackSearch"),
-            trackResults: document.getElementById("trackResults")
+            videoInput: document.getElementById("videoUrl")
         };
     }
 
@@ -121,25 +120,25 @@ class MemoriasApp {
             document.getElementById('descricaoMemoria').value = memory.description;
             document.getElementById('dataMemoria').value = memory.date;
 
-            const tracksList = document.getElementById('currentTracks');
-            tracksList.innerHTML = '';
+            const videosList = document.getElementById('currentVideos');
+            videosList.innerHTML = '';
             
-            if (memory.memory_tracks) {
-                memory.memory_tracks.forEach(track => {
-                    const trackElement = document.createElement('div');
-                    trackElement.className = 'memory-track';
-                    trackElement.innerHTML = `
-                        <div class="track-info">
-                            <div class="track-name">${track.track_name}</div>
-                            <div class="track-artist">${track.artist_name}</div>
+            if (memory.memory_videos) {
+                memory.memory_videos.forEach(video => {
+                    const videoElement = document.createElement('div');
+                    videoElement.className = 'memory-video';
+                    videoElement.innerHTML = `
+                        <div class="video-info">
+                            <div class="video-title">${video.title}</div>
+                            <div class="video-channel">${video.channel_title}</div>
                         </div>
-                        <button class="delete-btn" data-id="${track.id}">Remover</button>
+                        <button class="delete-btn" data-id="${video.id}">Remover</button>
                     `;
 
-                    const deleteBtn = trackElement.querySelector('.delete-btn');
-                    deleteBtn.addEventListener('click', () => this.removerTrack(track.id));
+                    const deleteBtn = videoElement.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', () => this.removerVideo(video.id));
 
-                    tracksList.appendChild(trackElement);
+                    videosList.appendChild(videoElement);
                 });
             }
 
@@ -164,23 +163,21 @@ class MemoriasApp {
                 year: 'numeric'
             });
 
-            let tracksHtml = '';
-            if (memory.memory_tracks && memory.memory_tracks.length > 0) {
-                tracksHtml = `
-                    <div class="memory-tracks">
+            let videosHtml = '';
+            if (memory.memory_videos && memory.memory_videos.length > 0) {
+                videosHtml = `
+                    <div class="memory-videos">
                         <h3>Músicas</h3>
-                        ${memory.memory_tracks.map(track => `
-                            <div class="memory-track">
-                                <div class="track-info">
-                                    <div class="track-name">${track.track_name}</div>
-                                    <div class="track-artist">${track.artist_name}</div>
+                        ${memory.memory_videos.map(video => `
+                            <div class="memory-video">
+                                <div class="video-info">
+                                    <div class="video-title">${video.title}</div>
+                                    <div class="video-channel">${video.channel_title}</div>
                                 </div>
-                                <div class="track-controls">
-                                    ${track.preview_url ? `
-                                        <button class="play-button" data-preview="${track.preview_url}">
-                                            ▶
-                                        </button>
-                                    ` : ''}
+                                <div class="video-controls">
+                                    <button class="play-button" data-video-id="${video.video_id}">
+                                        ▶
+                                    </button>
                                 </div>
                             </div>
                         `).join('')}
@@ -205,43 +202,54 @@ class MemoriasApp {
                         </div>
                     `).join('') || ''}
                 </div>
-                ${tracksHtml}
+                ${videosHtml}
+                <div id="youtubePlayer"></div>
             `;
 
-            this.setupAudioPlayers();
+            this.setupVideoPlayers();
             this.elements.memoriaModal.style.display = 'block';
         } catch (error) {
             console.error('Erro ao abrir memória:', error);
         }
     }
 
-    setupAudioPlayers() {
+    setupVideoPlayers() {
         const playButtons = document.querySelectorAll('.play-button');
         playButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const previewUrl = button.dataset.preview;
-                this.playPreview(previewUrl, button);
+                const videoId = button.dataset.videoId;
+                this.playVideo(videoId, button);
             });
         });
     }
 
-    playPreview(previewUrl, button) {
+    playVideo(videoId, button) {
+        const playerContainer = document.getElementById('youtubePlayer');
+        
         if (this.currentAudio) {
-            this.currentAudio.pause();
+            playerContainer.innerHTML = '';
             document.querySelectorAll('.play-button').forEach(btn => btn.textContent = '▶');
-        }
-
-        if (this.currentAudio && this.currentAudio.src === previewUrl) {
             this.currentAudio = null;
             return;
         }
 
-        this.currentAudio = new Audio(previewUrl);
-        this.currentAudio.play();
+        playerContainer.innerHTML = `
+            <iframe 
+                id="ytplayer" 
+                type="text/html" 
+                width="1" 
+                height="1"
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1"
+                style="visibility:hidden"
+            ></iframe>
+        `;
+
+        this.currentAudio = true;
         button.textContent = '⏸';
 
-        this.currentAudio.onended = () => {
+        const iframe = playerContainer.querySelector('iframe');
+        iframe.onended = () => {
             button.textContent = '▶';
             this.currentAudio = null;
         };
@@ -273,7 +281,8 @@ class MemoriasApp {
             description: document.getElementById('descricaoMemoria').value,
             date: document.getElementById('dataMemoria').value,
             imageFile: document.getElementById('imagemMemoria').files[0],
-            additionalImages: document.getElementById('imagensAdicionais').files
+            additionalImages: document.getElementById('imagensAdicionais').files,
+            videoUrl: document.getElementById('videoUrl').value
         };
 
         try {
@@ -325,6 +334,14 @@ class MemoriasApp {
                 }
             }
 
+            if (formData.videoUrl) {
+                const videoId = extractYouTubeId(formData.videoUrl);
+                if (videoId) {
+                    const videoInfo = getVideoInfo(videoId);
+                    await addMemoryVideo(data[0].id, videoInfo);
+                }
+            }
+
             this.fecharModal();
             await this.loadMemories();
             event.target.reset();
@@ -348,72 +365,16 @@ class MemoriasApp {
         }
     }
 
-    async searchTracks(query) {
+    async removerVideo(videoId) {
         try {
-            const response = await searchTracks(query);
-            const tracks = response.tracks.items;
-            
-            this.elements.trackResults.innerHTML = tracks.map(track => `
-                <div class="track-item" data-track='${JSON.stringify(track)}'>
-                    <div class="track-info">
-                        <div class="track-name">${track.name}</div>
-                        <div class="track-artist">${track.artists[0].name}</div>
-                    </div>
-                    ${track.preview_url ? `
-                        <button class="play-button" data-preview="${track.preview_url}">▶</button>
-                    ` : ''}
-                </div>
-            `).join('');
-
-            this.setupTrackSelection();
-            this.setupAudioPlayers();
-        } catch (error) {
-            console.error('Erro ao buscar músicas:', error);
-            this.elements.trackResults.innerHTML = '<p>Erro ao buscar músicas</p>';
-        }
-    }
-
-    setupTrackSelection() {
-        const trackItems = document.querySelectorAll('.track-item');
-        trackItems.forEach(item => {
-            item.addEventListener('click', async () => {
-                const track = JSON.parse(item.dataset.track);
-                const memoryId = document.getElementById('memoriaId').value;
-                
-                try {
-                    const { error } = await addMemoryTrack(memoryId, track);
-                    if (error) throw error;
-                    
-                    const tracksList = document.getElementById('currentTracks');
-                    const trackElement = document.createElement('div');
-                    trackElement.className = 'memory-track';
-                    trackElement.innerHTML = `
-                        <div class="track-info">
-                            <div class="track-name">${track.name}</div>
-                            <div class="track-artist">${track.artists[0].name}</div>
-                        </div>
-                        <button class="delete-btn">Remover</button>
-                    `;
-                    
-                    tracksList.appendChild(trackElement);
-                } catch (error) {
-                    console.error('Erro ao adicionar música:', error);
-                    alert('Erro ao adicionar música');
-                }
-            });
-        });
-    }
-
-    async removerTrack(trackId) {
-        try {
-            const { error } = await deleteMemoryTrack(trackId);
+            const { error } = await deleteMemoryVideo(videoId);
             if (error) throw error;
             
-            const trackElement = document.querySelector(`[data-id="${trackId}"]`).parentElement;
-            trackElement.remove();
+            const videoElement = document.querySelector(`[data-id="${videoId}"]`).parentElement;
+            videoElement.remove();
         } catch (error) {
-            console.error('Erro ao remover música:', error);
-            alert('Erro ao remover música');
+            console.error('Erro ao remover vídeo:', error);
+            alert('Erro ao remover vídeo');
         }
     }
 
@@ -452,15 +413,8 @@ class MemoriasApp {
             document.getElementById('memoriaId').value = '';
             document.getElementById('memoriaForm').reset();
             document.querySelector('.modal-content h2').textContent = 'Adicionar Memória';
-            document.getElementById('currentTracks').innerHTML = '';
+            document.getElementById('currentVideos').innerHTML = '';
             this.elements.addMemoriaModal.style.display = 'block';
-        });
-
-        this.elements.trackSearchInput?.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            if (query.length >= 3) {
-                this.searchTracks(query);
-            }
         });
 
         window.addEventListener('click', (e) => {
@@ -489,7 +443,8 @@ class MemoriasApp {
         if (this.elements.loginModal) this.elements.loginModal.style.display = 'none';
         if (this.elements.memoriaModal) this.elements.memoriaModal.style.display = 'none';
         if (this.currentAudio) {
-            this.currentAudio.pause();
+            const playerContainer = document.getElementById('youtubePlayer');
+            playerContainer.innerHTML = '';
             this.currentAudio = null;
         }
     }

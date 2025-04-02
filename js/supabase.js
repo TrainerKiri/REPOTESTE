@@ -77,12 +77,11 @@ export async function getMemories() {
                 url,
                 description
             ),
-            memory_tracks (
+            memory_videos (
                 id,
-                spotify_track_id,
-                track_name,
-                artist_name,
-                preview_url
+                video_id,
+                title,
+                channel_title
             )
         `)
         .order('date', { ascending: true });
@@ -99,12 +98,11 @@ export async function getMemoryById(id) {
                 url,
                 description
             ),
-            memory_tracks (
+            memory_videos (
                 id,
-                spotify_track_id,
-                track_name,
-                artist_name,
-                preview_url
+                video_id,
+                title,
+                channel_title
             )
         `)
         .eq('id', id)
@@ -185,36 +183,35 @@ export async function addMemoryImages(memoryId, images) {
     return { data, error };
 }
 
-export async function addMemoryTrack(memoryId, track) {
+export async function addMemoryVideo(memoryId, video) {
     const user = await getCurrentUser();
     if (!user || user.id !== ADMIN_USER_ID) {
-        return { error: { message: 'Apenas o administrador pode adicionar músicas' } };
+        return { error: { message: 'Apenas o administrador pode adicionar vídeos' } };
     }
 
     const { data, error } = await supabase
-        .from('memory_tracks')
+        .from('memory_videos')
         .insert([{
             memory_id: memoryId,
-            spotify_track_id: track.id,
-            track_name: track.name,
-            artist_name: track.artists[0].name,
-            preview_url: track.preview_url
+            video_id: video.id,
+            title: video.title,
+            channel_title: video.channelTitle
         }])
         .select();
 
     return { data, error };
 }
 
-export async function deleteMemoryTrack(trackId) {
+export async function deleteMemoryVideo(videoId) {
     const user = await getCurrentUser();
     if (!user || user.id !== ADMIN_USER_ID) {
-        return { error: { message: 'Apenas o administrador pode excluir músicas' } };
+        return { error: { message: 'Apenas o administrador pode excluir vídeos' } };
     }
 
     const { error } = await supabase
-        .from('memory_tracks')
+        .from('memory_videos')
         .delete()
-        .eq('id', trackId);
+        .eq('id', videoId);
 
     return { error };
 }
