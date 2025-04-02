@@ -76,12 +76,6 @@ export async function getMemories() {
                 id,
                 url,
                 description
-            ),
-            memory_videos (
-                id,
-                video_id,
-                title,
-                channel_title
             )
         `)
         .order('date', { ascending: true });
@@ -97,12 +91,6 @@ export async function getMemoryById(id) {
                 id,
                 url,
                 description
-            ),
-            memory_videos (
-                id,
-                video_id,
-                title,
-                channel_title
             )
         `)
         .eq('id', id)
@@ -181,37 +169,4 @@ export async function addMemoryImages(memoryId, images) {
         .select();
 
     return { data, error };
-}
-
-export async function addMemoryVideo(memoryId, video) {
-    const user = await getCurrentUser();
-    if (!user || user.id !== ADMIN_USER_ID) {
-        return { error: { message: 'Apenas o administrador pode adicionar vídeos' } };
-    }
-
-    const { data, error } = await supabase
-        .from('memory_videos')
-        .insert([{
-            memory_id: memoryId,
-            video_id: video.id,
-            title: video.title,
-            channel_title: video.channelTitle
-        }])
-        .select();
-
-    return { data, error };
-}
-
-export async function deleteMemoryVideo(videoId) {
-    const user = await getCurrentUser();
-    if (!user || user.id !== ADMIN_USER_ID) {
-        return { error: { message: 'Apenas o administrador pode excluir vídeos' } };
-    }
-
-    const { error } = await supabase
-        .from('memory_videos')
-        .delete()
-        .eq('id', videoId);
-
-    return { error };
 }
