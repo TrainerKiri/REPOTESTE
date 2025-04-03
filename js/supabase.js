@@ -61,6 +61,7 @@ export async function createMemory(memory) {
             description: memory.description,
             date: memory.date,
             image_url: memory.image_url,
+            youtube_url: memory.youtube_url,
             user_id: user.id
         }])
         .select();
@@ -110,7 +111,8 @@ export async function updateMemory(id, memory) {
             title: memory.title,
             description: memory.description,
             date: memory.date,
-            image_url: memory.image_url
+            image_url: memory.image_url,
+            youtube_url: memory.youtube_url
         })
         .eq('id', id)
         .select();
