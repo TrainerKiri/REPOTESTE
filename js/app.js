@@ -2,11 +2,131 @@ import { signIn, signOut, isAdmin, createMemory, getMemories, deleteMemory, uplo
 
 const START_DATE = new Date("2025-01-06");
 
+class YouTubePlayer {
+    constructor() {
+        this.player = null;
+        this.currentVideoId = null;
+        this.isPlaying = false;
+        this.currentMemoryTitle = '';
+        this.miniPlayer = this.createMiniPlayer();
+    }
+
+    createMiniPlayer() {
+        const miniPlayer = document.createElement('div');
+        miniPlayer.className = 'mini-player';
+        miniPlayer.innerHTML = `
+            <div class="mini-player-header">
+                <h4 class="mini-player-title"></h4>
+                <div class="mini-player-controls">
+                    <button class="mini-player-button mini-player-toggle">▶</button>
+                    <button class="mini-player-button mini-player-close">×</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(miniPlayer);
+
+        const toggleButton = miniPlayer.querySelector('.mini-player-toggle');
+        const closeButton = miniPlayer.querySelector('.mini-player-close');
+
+        toggleButton.addEventListener('click', () => this.togglePlayPause());
+        closeButton.addEventListener('click', () => this.destroy());
+
+        return miniPlayer;
+    }
+
+    initPlayer(videoId, memoryTitle, onReady) {
+        this.currentMemoryTitle = memoryTitle;
+        if (window.YT && window.YT.Player) {
+            this.createPlayer(videoId, onReady);
+        } else {
+            setTimeout(() => this.initPlayer(videoId, memoryTitle, onReady), 100);
+        }
+    }
+
+    createPlayer(videoId, onReady) {
+        if (this.player && this.currentVideoId === videoId) {
+            return;
+        }
+
+        if (this.player) {
+            this.player.destroy();
+        }
+
+        this.currentVideoId = videoId;
+        this.player = new YT.Player('ytPlayer', {
+            videoId: videoId,
+            playerVars: {
+                autoplay: 0,
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                modestbranding: 1,
+                playsinline: 1,
+                rel: 0,
+                showinfo: 0
+            },
+            events: {
+                onReady: onReady,
+                onStateChange: (event) => {
+                    this.isPlaying = event.data === YT.PlayerState.PLAYING;
+                    this.updatePlayButton();
+                    this.updateMiniPlayer();
+                }
+            }
+        });
+    }
+
+    updatePlayButton() {
+        const playButton = document.querySelector('.play-music');
+        if (playButton) {
+            const icon = playButton.querySelector('.play-icon');
+            const text = playButton.querySelector('span:last-child');
+            
+            icon.textContent = this.isPlaying ? '⏸' : '▶';
+            text.textContent = this.isPlaying ? ' Pausar Música' : ' Tocar Música';
+        }
+    }
+
+    updateMiniPlayer() {
+        const titleElement = this.miniPlayer.querySelector('.mini-player-title');
+        const toggleButton = this.miniPlayer.querySelector('.mini-player-toggle');
+        
+        titleElement.textContent = this.currentMemoryTitle;
+        toggleButton.textContent = this.isPlaying ? '⏸' : '▶';
+        
+        if (this.player && this.currentVideoId) {
+            this.miniPlayer.classList.add('active');
+        } else {
+            this.miniPlayer.classList.remove('active');
+        }
+    }
+
+    togglePlayPause() {
+        if (this.player) {
+            if (this.isPlaying) {
+                this.player.pauseVideo();
+            } else {
+                this.player.playVideo();
+            }
+        }
+    }
+
+    destroy() {
+        if (this.player) {
+            this.player.destroy();
+            this.player = null;
+            this.currentVideoId = null;
+            this.isPlaying = false;
+            this.miniPlayer.classList.remove('active');
+        }
+    }
+}
+
 class MemoriasApp {
     constructor() {
         this.initializeElements();
+        this.youtubePlayer = new YouTubePlayer();
         this.init();
-        this.youtubePlayer = null;
         this.initYouTubeAPI();
     }
 
@@ -107,7 +227,12 @@ class MemoriasApp {
             </div>
             <p class="memoria-description">${memory.description}</p>
             ${memory.image_url ? `<img src="${memory.image_url}" class="imagem-memoria" alt="${memory.title}">` : ''}
-            ${memory.youtube_url ? '<div class="youtube-indicator">🎵 Música disponível</div>' : ''}
+            ${memory.youtube_url ? `
+                <div class="youtube-indicator">
+                    <span>🎵</span>
+                    <span>Música disponível</span>
+                </div>
+            ` : ''}
             ${isAdmin ? `
                 <div class="admin-controls">
                     <button class="edit-btn" data-id="${memory.id}">Editar</button>
@@ -189,10 +314,17 @@ class MemoriasApp {
                     `).join('') : ''}
                 </div>
                 ${memory.youtube_url ? `
-                    <div class="music-controls">
-                        <button class="play-music" data-video-id="${this.getYouTubeVideoId(memory.youtube_url)}">
-                            <span class="play-icon">▶</span> Tocar Música
-                        </button>
+                    <div class="music-section">
+                        <h3>Música da Memória</h3>
+                        <div class="music-controls">
+                            <button class="play-music" data-video-id="${this.getYouTubeVideoId(memory.youtube_url)}">
+                                <span class="play-icon">▶</span>
+                                <span>Tocar Música</span>
+                            </button>
+                        </div>
+                        <div class="music-info">
+                            Clique no botão acima para tocar/pausar a música desta memória
+                        </div>
                     </div>
                 ` : ''}
             `;
@@ -201,54 +333,16 @@ class MemoriasApp {
                 const videoId = this.getYouTubeVideoId(memory.youtube_url);
                 if (videoId) {
                     this.elements.youtubePlayer.innerHTML = '<div id="ytPlayer"></div>';
-                    if (this.youtubePlayer) {
-                        this.youtubePlayer.destroy();
-                    }
-
-                    // Wait for YouTube API to be ready
-                    const initPlayer = () => {
-                        if (window.YT && window.YT.Player) {
-                            this.youtubePlayer = new YT.Player('ytPlayer', {
-                                videoId: videoId,
-                                playerVars: {
-                                    autoplay: 0,
-                                    controls: 0,
-                                    disablekb: 1,
-                                    fs: 0,
-                                    modestbranding: 1,
-                                    playsinline: 1,
-                                    rel: 0,
-                                    showinfo: 0
-                                },
-                                events: {
-                                    onReady: (event) => {
-                                        const playButton = this.elements.memoriaDetalhes.querySelector('.play-music');
-                                        if (playButton) {
-                                            playButton.addEventListener('click', () => {
-                                                const icon = playButton.querySelector('.play-icon');
-                                                if (icon.textContent === '▶') {
-                                                    event.target.playVideo();
-                                                    icon.textContent = '⏸';
-                                                    playButton.querySelector('span:last-child').textContent = ' Pausar Música';
-                                                } else {
-                                                    event.target.pauseVideo();
-                                                    icon.textContent = '▶';
-                                                    playButton.querySelector('span:last-child').textContent = ' Tocar Música';
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
+                    
+                    this.youtubePlayer.initPlayer(videoId, memory.title, () => {
+                        const playButton = this.elements.memoriaDetalhes.querySelector('.play-music');
+                        if (playButton) {
+                            playButton.addEventListener('click', () => {
+                                this.youtubePlayer.togglePlayPause();
                             });
-                        } else {
-                            setTimeout(initPlayer, 100);
                         }
-                    };
-
-                    initPlayer();
+                    });
                 }
-            } else {
-                this.elements.youtubePlayer.innerHTML = '';
             }
 
             this.elements.memoriaModal.style.display = 'block';
@@ -422,10 +516,8 @@ class MemoriasApp {
         if (this.elements.loginModal) this.elements.loginModal.style.display = 'none';
         if (this.elements.memoriaModal) {
             this.elements.memoriaModal.style.display = 'none';
-            if (this.youtubePlayer) {
-                this.youtubePlayer.destroy();
-                this.youtubePlayer = null;
-            }
+            // Don't destroy the player when closing the modal
+            // this.youtubePlayer.destroy();
         }
     }
 }
