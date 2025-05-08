@@ -177,9 +177,8 @@ button:hover {
 
 .imagem-memoria {
     width: 100%;
-    height: auto;
-    max-height: 300px;
-    object-fit: contain;
+    height: 300px;
+    object-fit: cover;
     border-radius: 8px;
     background-color: rgba(0, 0, 0, 0.2);
     padding: 1rem;
@@ -198,9 +197,8 @@ button:hover {
 
 .imagem-principal {
     width: 100%;
-    height: auto;
-    max-height: 500px;
-    object-fit: contain;
+    height: 500px;
+    object-fit: cover;
     border-radius: 8px;
     grid-column: 1 / -1;
     background-color: rgba(0, 0, 0, 0.2);
@@ -209,9 +207,8 @@ button:hover {
 
 .imagem-galeria {
     width: 100%;
-    height: auto;
-    max-height: 300px;
-    object-fit: contain;
+    height: 300px;
+    object-fit: cover;
     border-radius: 8px;
     cursor: pointer;
     transition: transform 0.3s ease;
@@ -552,6 +549,69 @@ button:hover {
 
 .mini-player-close:hover {
     background-color: rgba(255, 255, 255, 0.2);
+}
+
+.welcome-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    overflow-y: auto;
+}
+
+.welcome-content {
+    background-color: var(--bg-darker);
+    color: var(--text-light);
+    padding: 2.5rem;
+    border-radius: 12px;
+    position: relative;
+    margin: 5% auto;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    font-family: 'Crimson Text', serif;
+    text-align: center;
+}
+
+.welcome-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    color: var(--primary-color);
+}
+
+.visit-count {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: var(--text-gray);
+    font-style: italic;
+}
+
+.welcome-message {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin: 1.5rem 0;
+}
+
+.welcome-close {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.welcome-close:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
 }
 
 @media (min-width: 768px) {

@@ -1,4 +1,4 @@
-import { signIn, signOut, isAdmin, createMemory, getMemories, deleteMemory, uploadImage, getMemoryById, addMemoryImages, updateMemory } from './supabase.js';
+import { signIn, signOut, isAdmin, createMemory, getMemories, deleteMemory, uploadImage, getMemoryById, addMemoryImages, updateMemory, getCurrentUser } from './supabase.js';
 
 const START_DATE = new Date("2025-01-06");
 
@@ -126,6 +126,7 @@ class MemoriasApp {
     constructor() {
         this.initializeElements();
         this.youtubePlayer = new YouTubePlayer();
+        this.checkVisitCount();
         this.init();
         this.initYouTubeAPI();
     }
@@ -144,8 +145,52 @@ class MemoriasApp {
             memoriaForm: document.getElementById("memoriaForm"),
             memoriaModal: document.getElementById("memoriaModal"),
             memoriaDetalhes: document.getElementById("memoriaDetalhes"),
-            youtubePlayer: document.getElementById("youtubePlayer")
+            youtubePlayer: document.getElementById("youtubePlayer"),
+            welcomeModal: document.getElementById("welcomeModal")
         };
+    }
+
+    async checkVisitCount() {
+        let visitCount = localStorage.getItem('visitCount') || 0;
+        visitCount = parseInt(visitCount) + 1;
+        localStorage.setItem('visitCount', visitCount);
+
+        const user = await getCurrentUser();
+        let userVisits = {};
+        
+        if (user) {
+            const stored = localStorage.getItem('userVisits');
+            userVisits = stored ? JSON.parse(stored) : {};
+            userVisits[user.id] = (userVisits[user.id] || 0) + 1;
+            localStorage.setItem('userVisits', JSON.stringify(userVisits));
+        }
+
+        this.showWelcomeMessage(visitCount, user ? userVisits[user.id] : null);
+    }
+
+    showWelcomeMessage(totalVisits, userVisits) {
+        const welcomeMessage = userVisits 
+            ? `Bem-vindo de volta! Esta é sua ${userVisits}ª visita.`
+            : `Bem-vindo! Esta é sua ${totalVisits}ª visita ao nosso acervo de memórias.`;
+
+        this.elements.welcomeModal.innerHTML = `
+            <div class="welcome-content">
+                <h2 class="welcome-title">Biblioteca de Memórias</h2>
+                <p class="visit-count">${welcomeMessage}</p>
+                <div class="welcome-message">
+                    <p>Aqui guardamos nossas memórias mais preciosas, cada uma delas uma página única em nossa história de amor.</p>
+                    <p>Sinta-se à vontade para explorar cada momento especial que compartilhamos.</p>
+                </div>
+                <button class="welcome-close">Entrar na Biblioteca</button>
+            </div>
+        `;
+
+        this.elements.welcomeModal.style.display = 'block';
+
+        const closeButton = this.elements.welcomeModal.querySelector('.welcome-close');
+        closeButton.addEventListener('click', () => {
+            this.elements.welcomeModal.style.display = 'none';
+        });
     }
 
     async init() {
@@ -516,8 +561,6 @@ class MemoriasApp {
         if (this.elements.loginModal) this.elements.loginModal.style.display = 'none';
         if (this.elements.memoriaModal) {
             this.elements.memoriaModal.style.display = 'none';
-            // Don't destroy the player when closing the modal
-            // this.youtubePlayer.destroy();
         }
     }
 }
