@@ -126,7 +126,7 @@ class MemoriasApp {
     constructor() {
         this.initializeElements();
         this.youtubePlayer = new YouTubePlayer();
-        this.checkVisitCount();
+        this.loadWelcomeMessage();
         this.init();
         this.initYouTubeAPI();
     }
@@ -146,51 +146,79 @@ class MemoriasApp {
             memoriaModal: document.getElementById("memoriaModal"),
             memoriaDetalhes: document.getElementById("memoriaDetalhes"),
             youtubePlayer: document.getElementById("youtubePlayer"),
-            welcomeModal: document.getElementById("welcomeModal")
+            welcomeModal: document.getElementById("welcomeModal"),
+            welcomeEditModal: document.getElementById("welcomeEditModal")
         };
     }
 
-    async checkVisitCount() {
-        let visitCount = localStorage.getItem('visitCount') || 0;
-        visitCount = parseInt(visitCount) + 1;
-        localStorage.setItem('visitCount', visitCount);
+    async loadWelcomeMessage() {
+        const welcomeMessage = localStorage.getItem('welcomeMessage') || `Bem-vindo à nossa Biblioteca de Memórias
 
-        const user = await getCurrentUser();
-        let userVisits = {};
+Aqui guardamos nossas memórias mais preciosas, cada uma delas uma página única em nossa história de amor.
+
+Sinta-se à vontade para explorar cada momento especial que compartilhamos.
+
+Role para baixo para continuar lendo...
+
+Com amor,
+O Senhor Aluado`;
+
+        const isAdminResult = await isAdmin();
         
-        if (user) {
-            const stored = localStorage.getItem('userVisits');
-            userVisits = stored ? JSON.parse(stored) : {};
-            userVisits[user.id] = (userVisits[user.id] || 0) + 1;
-            localStorage.setItem('userVisits', JSON.stringify(userVisits));
-        }
-
-        this.showWelcomeMessage(visitCount, user ? userVisits[user.id] : null);
-    }
-
-    showWelcomeMessage(totalVisits, userVisits) {
-        const welcomeMessage = userVisits 
-            ? `Bem-vindo de volta! Esta é sua ${userVisits}ª visita.`
-            : `Bem-vindo! Esta é sua ${totalVisits}ª visita ao nosso acervo de memórias.`;
-
         this.elements.welcomeModal.innerHTML = `
             <div class="welcome-content">
                 <h2 class="welcome-title">Biblioteca de Memórias</h2>
-                <p class="visit-count">${welcomeMessage}</p>
-                <div class="welcome-message">
-                    <p>Aqui guardamos nossas memórias mais preciosas, cada uma delas uma página única em nossa história de amor.</p>
-                    <p>Sinta-se à vontade para explorar cada momento especial que compartilhamos.</p>
-                </div>
-                <button class="welcome-close">Entrar na Biblioteca</button>
+                <div class="welcome-message">${welcomeMessage}</div>
+                ${isAdminResult ? `
+                    <button class="welcome-edit">
+                        ✎ Editar Mensagem
+                    </button>
+                ` : ''}
+                <button class="welcome-close">Fechar Pergaminho</button>
             </div>
         `;
 
-        this.elements.welcomeModal.style.display = 'block';
+        if (isAdminResult) {
+            this.elements.welcomeModal.innerHTML += `
+                <div id="welcomeEditModal" class="welcome-edit-modal">
+                    <div class="welcome-edit-content">
+                        <h3>Editar Mensagem de Boas-vindas</h3>
+                        <form id="welcomeEditForm">
+                            <textarea id="welcomeMessageEdit">${welcomeMessage}</textarea>
+                            <button type="submit">Salvar</button>
+                            <button type="button" class="close-btn">Cancelar</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            const editBtn = this.elements.welcomeModal.querySelector('.welcome-edit');
+            const editModal = document.getElementById('welcomeEditModal');
+            const editForm = document.getElementById('welcomeEditForm');
+            
+            editBtn.addEventListener('click', () => {
+                editModal.style.display = 'block';
+            });
+
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newMessage = document.getElementById('welcomeMessageEdit').value;
+                localStorage.setItem('welcomeMessage', newMessage);
+                this.loadWelcomeMessage();
+                editModal.style.display = 'none';
+            });
+
+            editModal.querySelector('.close-btn').addEventListener('click', () => {
+                editModal.style.display = 'none';
+            });
+        }
 
         const closeButton = this.elements.welcomeModal.querySelector('.welcome-close');
         closeButton.addEventListener('click', () => {
             this.elements.welcomeModal.style.display = 'none';
         });
+
+        this.elements.welcomeModal.style.display = 'block';
     }
 
     async init() {

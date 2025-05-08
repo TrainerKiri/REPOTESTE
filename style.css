@@ -559,59 +559,169 @@ button:hover {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
     overflow-y: auto;
 }
 
 .welcome-content {
-    background-color: var(--bg-darker);
-    color: var(--text-light);
-    padding: 2.5rem;
-    border-radius: 12px;
+    background-color: #f4e4bc;
+    color: #2c1810;
+    padding: 3rem 2rem;
+    border-radius: 8px;
     position: relative;
-    margin: 5% auto;
+    margin: 2rem auto;
     width: 90%;
     max-width: 600px;
-    box-shadow: 0 4px 20px var(--shadow-color);
+    max-height: 80vh;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     font-family: 'Crimson Text', serif;
     text-align: center;
+    background-image: 
+        linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow-y: auto;
+    border: 12px solid #8B6B4F;
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-content::before,
+.welcome-content::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(to bottom, rgba(44, 24, 16, 0.2), transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.welcome-content::before {
+    top: 0;
+}
+
+.welcome-content::after {
+    bottom: 0;
+    transform: rotate(180deg);
 }
 
 .welcome-title {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
     font-style: italic;
-    color: var(--primary-color);
-}
-
-.visit-count {
-    font-size: 1.2rem;
-    margin: 1rem 0;
-    color: var(--text-gray);
-    font-style: italic;
+    color: #2c1810;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    font-family: 'Crimson Text', serif;
 }
 
 .welcome-message {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.8;
     margin: 1.5rem 0;
+    color: #2c1810;
+    white-space: pre-line;
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 1rem;
 }
 
 .welcome-close {
-    background-color: var(--primary-color);
-    color: var(--text-light);
+    background-color: #6B4423;
+    color: #f4e4bc;
     padding: 0.75rem 1.5rem;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 1rem;
-    margin-top: 1rem;
+    font-size: 1.1rem;
+    margin-top: 2rem;
     transition: all 0.3s ease;
+    font-family: 'Crimson Text', serif;
+    align-self: center;
 }
 
 .welcome-close:hover {
-    background-color: var(--secondary-color);
+    background-color: #8B6B4F;
     transform: translateY(-2px);
+}
+
+.welcome-edit {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: #6B4423;
+    color: #f4e4bc;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+
+
+.welcome-edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+}
+
+.welcome-edit-content {
+    background-color: var(--bg-darker);
+    color: var(--text-light);
+    padding: 2rem;
+    border-radius: 8px;
+    position: relative;
+    margin: 2rem auto;
+    width: 90%;
+    max-width: 600px;
+}
+
+#welcomeMessageEdit {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    background-color: rgba(230, 222, 213, 0.05);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    resize: vertical;
+}
+
+@media (max-width: 768px) {
+    .welcome-content {
+        margin: 1rem;
+        padding: 2rem 1rem;
+        max-height: 90vh;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .welcome-message {
+        font-size: 1.1rem;
+        padding: 0 0.5rem;
+    }
+
+    .welcome-edit {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
 }
 
 @media (min-width: 768px) {
